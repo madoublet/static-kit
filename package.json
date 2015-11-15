@@ -1,0 +1,33 @@
+{
+  "name": "static-kit",
+  "version": "1.0.0",
+  "description": "A micro library to provide static site methods for hashedit",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/madoublet/static-kit.git"
+  },
+  "keywords": [
+    "static",
+    "html"
+  ],
+  "author": "Matthew Smith",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/madoublet/static-kit/issues"
+  },
+  "homepage": "https://github.com/madoublet/static-kit#readme",
+  "dependencies": {
+    "express": "~4.13.1",
+    "express-session": "*",
+    "passport": "~0.3.0",
+    "passport-google-oauth": "*",
+    "cheerio": "*",
+    "mkdirp": "*",
+    "readdirp": "*",
+    "multiparty": "*"
+  }
+}

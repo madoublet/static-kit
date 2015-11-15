@@ -16,9 +16,14 @@ router.get('/list', function(req, res, next) {
   if(req.user){
     
     var files = fs.readdirSync('public/images');
+    var arr = [];
+    
+    for(x=0; x<files.length; x++){
+      arr.push('/images/' + files[x]);
+    }
     
     res.setHeader('Content-Type', 'application/json');
-    res.status(200).send(JSON.stringify(files));
+    res.status(200).send(JSON.stringify(arr));
     
   }
   else{
