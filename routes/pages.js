@@ -235,6 +235,74 @@ router.post('/save', function(req, res, next) {
 });
 
 /**
+  * Apply page settings
+  * @param {Object} req - http://expressjs.com/api.html#req
+  * @param {Object} res - http://expressjs.com/api.html#res
+  * @param {Object} next - required for middleware
+  */
+router.post('/settings', function(req, res, next) {
+
+  // get parts
+  var parts = url.parse(req.headers.referer);
+
+  var params = req.body;
+  var title = params.title;
+  var description = params.description;
+
+  // get pathname
+  var pathToFile = parts.pathname;
+
+  if(req.user && pathToFile){
+
+    pathToFile = 'public' + pathToFile;
+
+    if(req.body){
+
+      // read file
+      fs.readFile(pathToFile, function (err, html) {
+
+        if (err) {
+          throw err;
+        }
+        else{
+
+          // load html
+          $ = cheerio.load(html);
+
+          $('title').html(title);
+          $('meta[name=description]').attr('content', description);
+
+          // write changes
+          fs.writeFile(pathToFile, $.html(), function (err) {
+            if (err) {
+              throw err;
+            }
+
+            console.log('Saved!');
+          });
+
+
+
+        }
+
+      });
+
+
+    }
+    else{
+      res.sendStatus(400);
+    }
+
+    // send success
+    res.sendStatus(200);
+  }
+  else{
+    res.sendStatus(401);
+  }
+
+});
+
+/**
   * Edits a page
   * @param {Object} req - http://expressjs.com/api.html#req
   * @param {Object} res - http://expressjs.com/api.html#res
