@@ -15,8 +15,6 @@ var readdirp = require('readdirp');
   */
 router.get('/list', function(req, res, next) {
 
-  if(req.user){
-
     readdirp({ root: 'public', fileFilter: ['*.html', '*.htm'], directoryFilter: ['!hashedit', '!images', '!js', '!node_modules', '!bower_components'] }
         , function(fileInfo) {
           // do something with file entry here
@@ -34,12 +32,6 @@ router.get('/list', function(req, res, next) {
           res.status(200).send(JSON.stringify(list));
         });
 
-  }
-  else{
-    res.sendStatus(401);
-  }
-
-
 });
 
 /**
@@ -49,8 +41,6 @@ router.get('/list', function(req, res, next) {
   * @param {Object} next - required for middleware
   */
 router.get('/path/list', function(req, res, next) {
-
-  if(req.user){
 
     readdirp({ root: 'public', fileFilter: ['*.html', '*.htm'], directoryFilter: ['!hashedit', '!images', '!js', '!node_modules', '!bower_components'] }
         , function(fileInfo) {
@@ -78,12 +68,6 @@ router.get('/path/list', function(req, res, next) {
 
     res.setHeader('Content-Type', 'application/json');
     res.status(200).send(JSON.stringify(list));
-
-  }
-  else{
-    res.sendStatus(401);
-  }
-
 
 });
 
@@ -303,7 +287,7 @@ router.post('/settings', function(req, res, next) {
 });
 
 /**
-  * Edits a page
+  * Retrieves a page
   * @param {Object} req - http://expressjs.com/api.html#req
   * @param {Object} res - http://expressjs.com/api.html#res
   * @param {Object} next - required for middleware
@@ -316,7 +300,7 @@ router.get('/retrieve', function(req, res, next) {
   // get pathname
   var pathToFile = parts.pathname;
 
-  if(req.user && pathToFile){
+  if(pathToFile){
 
     pathToFile = 'public' + pathToFile;
 
