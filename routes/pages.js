@@ -54,8 +54,6 @@ router.get('/path/list', function(req, res, next) {
           for(x=0; x<result.files.length; x++){
             var str = path.dirname('/' + result.files[x].path);
 
-            console.log(list.indexOf(str));
-
             if(list.indexOf(str) == -1){
               list.push(str);
             }
@@ -107,8 +105,6 @@ router.post('/add', function(req, res, next) {
             // read file
             fs.readFile(defaultFile, function (err, html) {
 
-                console.log(html);
-
                 if (err) {
                   throw err;
                 }
@@ -125,7 +121,7 @@ router.post('/add', function(req, res, next) {
                       throw err;
                     }
 
-                    console.log('File created at: ' + file);
+                    console.log('[Hashedit] File created at: ' + file);
                   });
 
                 }
@@ -143,6 +139,7 @@ router.post('/add', function(req, res, next) {
   }
 
 });
+
 
 /**
   * Edits a page
@@ -194,7 +191,7 @@ router.post('/save', function(req, res, next) {
               throw err;
             }
 
-            console.log('Saved!');
+            console.log('[Hashedit] Content Saved!');
           });
 
 
@@ -262,7 +259,7 @@ router.post('/settings', function(req, res, next) {
               throw err;
             }
 
-            console.log('Saved!');
+            console.log('[Hashedit] Settings Saved!');
           });
 
 

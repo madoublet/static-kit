@@ -71,11 +71,11 @@ exports.setupAuth = function(app, config){
         }
 
         if(isAuthorized){
-          	console.log('Authorized!!!');
+          	console.log('[Hashedit] Authorized!');
           	return done(null, profile);
         }
         else{
-          	console.log('Not Authorized!!!');
+          	console.log('[Hashedit] Not Authorized!');
           	return done(null, false, {message: 'Not authorized'});
         }
 
