@@ -151,9 +151,22 @@ router.post('/save', function(req, res, next) {
 
   // get parts
   var parts = url.parse(req.headers.referer);
-
+  
   // get pathname
   var pathToFile = parts.pathname;
+  
+  // handle index files (e.g. http://hashedit.io/contact)
+  if(pathToFile.indexOf('.html') == -1){
+    
+    // get the last character of the string
+    if(pathToFile.slice(-1) == '/'){
+      pathToFile += 'index.html';
+    }
+    else{
+      pathToFile += '/index.html';
+    }
+    
+  }
 
   if(req.user && pathToFile){
 
@@ -296,6 +309,21 @@ router.get('/retrieve', function(req, res, next) {
 
   // get pathname
   var pathToFile = parts.pathname;
+  
+  // handle index files (e.g. http://hashedit.io/contact)
+  if(pathToFile.indexOf('.html') == -1){
+    
+    // get the last character of the string
+    if(pathToFile.slice(-1) == '/'){
+      pathToFile += 'index.html';
+    }
+    else{
+      pathToFile += '/index.html';
+    }
+    
+  }
+
+  console.log('pathToFile=' + pathToFile);
 
   if(pathToFile){
 

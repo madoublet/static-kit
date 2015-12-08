@@ -16,7 +16,7 @@ var exports = module.exports = {};
   * Setup authorization for the app
   * @param {Object} app
   */
-exports.setupAuth = function(app, config){
+exports.setup = function(app, config){
 
     // setup client IDs
     var GOOGLE_CLIENT_ID = config.google.clientId;
@@ -143,15 +143,7 @@ exports.setupAuth = function(app, config){
 
     });
 
-}
-
- /**
-  * Setup routes for the app
-  * @param {Object} app
-  */
-exports.setupRoutes = function(app){
-
-    // external routes
+    // setup routes
     app.use('/api/pages', pages);
     app.use('/api/images', images);
     app.use('/api/auth', auth);
