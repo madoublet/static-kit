@@ -92,10 +92,26 @@ router.post('/add', function(req, res, next) {
     var file = 'public/' + url;
     var defaultFile = 'public/.default.html';
 
-
     // get directory from path
     var dir = path.dirname(file);
 
+    // check if a default file exists in that directory, #ref: http://bit.ly/1IFovfs
+    try {
+        // query the entry
+        stats = fs.lstatSync(dir + '/.default.html');
+
+        // is it a file?
+        if (stats.isFile()) {
+            defaultFile = dir + '/.default.html';
+        }
+    }
+    catch (e) {
+
+        // log exception
+        console.error(e);
+    }
+
+    // make directory if it does not exist
     mkdirp(dir, function (err) {
         if (err) {
           console.error(err)
@@ -151,13 +167,13 @@ router.post('/save', function(req, res, next) {
 
   // get parts
   var parts = url.parse(req.headers.referer);
-  
+
   // get pathname
   var pathToFile = parts.pathname;
-  
+
   // handle index files (e.g. http://hashedit.io/contact)
   if(pathToFile.indexOf('.html') == -1){
-    
+
     // get the last character of the string
     if(pathToFile.slice(-1) == '/'){
       pathToFile += 'index.html';
@@ -165,7 +181,7 @@ router.post('/save', function(req, res, next) {
     else{
       pathToFile += '/index.html';
     }
-    
+
   }
 
   if(req.user && pathToFile){
@@ -309,10 +325,10 @@ router.get('/retrieve', function(req, res, next) {
 
   // get pathname
   var pathToFile = parts.pathname;
-  
+
   // handle index files (e.g. http://hashedit.io/contact)
   if(pathToFile.indexOf('.html') == -1){
-    
+
     // get the last character of the string
     if(pathToFile.slice(-1) == '/'){
       pathToFile += 'index.html';
@@ -320,7 +336,7 @@ router.get('/retrieve', function(req, res, next) {
     else{
       pathToFile += '/index.html';
     }
-    
+
   }
 
   console.log('pathToFile=' + pathToFile);
