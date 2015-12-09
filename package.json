@@ -1,6 +1,6 @@
 {
   "name": "static-kit",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A micro library to provide static site methods for hashedit",
   "main": "index.js",
   "scripts": {
