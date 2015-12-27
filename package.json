@@ -28,6 +28,7 @@
     "cheerio": "*",
     "mkdirp": "*",
     "readdirp": "*",
-    "multiparty": "*"
+    "multiparty": "*",
+    "node-cache": "~3.0.0"
   }
 }

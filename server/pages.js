@@ -6,6 +6,10 @@ var router = express.Router();
 var mkdirp = require('mkdirp');
 var url  = require('url');
 var readdirp = require('readdirp');
+var NodeCache = require('node-cache');
+
+// init cache
+cache = new NodeCache();
 
 /**
   * Lists pages
@@ -30,6 +34,100 @@ router.get('/list', function(req, res, next) {
 
           res.setHeader('Content-Type', 'application/json');
           res.status(200).send(JSON.stringify(list));
+        });
+
+});
+
+/**
+  * Lists pages
+  * @param {Object} req - http://expressjs.com/api.html#req
+  * @param {Object} res - http://expressjs.com/api.html#res
+  * @param {Object} next - required for middleware
+  */
+router.get('/list/details', function(req, res, next) {
+
+    readdirp({ root: 'public', fileFilter: ['*.html', '*.htm'], directoryFilter: ['!hashedit', '!images', '!js', '!node_modules', '!bower_components'] }
+        , function(fileInfo) {
+          // do something with file entry here
+        }
+        , function (err, result) {
+
+            // clean up list
+            var list = cache.get('list-details');
+
+            if(list == undefined){
+
+                list = [];
+                var domain = '';
+
+                var config = req.app.get('config');
+
+                if(config){
+                    domain = config.app.url;
+                }
+
+                for(x=0; x<result.files.length; x++){
+
+                    var pathToFile = 'public/' + result.files[x].path;
+                    var title = '';
+                    var desc = '';
+                    var image = '';
+
+                    var html = fs.readFileSync(pathToFile, 'utf8');
+
+                    $ = cheerio.load(html);
+
+                    title = $('title').html() || 'No title';
+                    desc = $('meta[name=description]').attr('content') || '';
+
+                    var images = $('img');
+
+                    if(images.length > 0){
+                        image = $(images[0]).attr('src') || '';
+                    }
+
+                    if(image != ''){
+
+                        if(image.indexOf('://') == -1){
+
+                            if(image.indexOf('../') == -1){
+
+                                if(image.charAt(0) == '/'){
+                                    image = domain + image;
+                                }
+                                else{
+                                    image = domain + '/' + image;
+                                }
+
+
+                            }
+
+                        }
+
+                    }
+
+                    // page
+                    var page = {
+                        title: title,
+                        description: desc,
+                        image: image,
+                        url: result.files[x].path,
+                        fullUrl: domain + '/' + result.files[x].path,
+                        editUrl: domain + '/' + result.files[x].path + '#edit'
+                    }
+
+                    list.push(page);
+                }
+
+                // create a cache to make this run faster
+                cache.set('list-details', list);
+
+            }
+
+            // push list
+            res.setHeader('Content-Type', 'application/json');
+            res.status(200).send(JSON.stringify(list));
+
         });
 
 });

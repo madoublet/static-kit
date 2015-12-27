@@ -6,9 +6,10 @@ var express = require('express'),
 	GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 
 // routes
-var pages = require('./routes/pages'),
-    images = require('./routes/images'),
-    auth = require('./routes/auth');
+var pages = require('./server/pages'),
+    images = require('./server/images'),
+    auth = require('./server/auth'),
+    settings = require('./server/settings');
 
 var exports = module.exports = {};
 
@@ -17,6 +18,11 @@ var exports = module.exports = {};
   * @param {Object} app
   */
 exports.setup = function(app, config){
+
+    console.log('[static-kit] setup client');
+
+    // setup route
+    app.use('/admin/pages',  express.static(__dirname + '/client'));
 
     // setup client IDs
     var GOOGLE_CLIENT_ID = config.google.clientId;
@@ -117,7 +123,14 @@ exports.setup = function(app, config){
       function(req, res) {
 
         if(req.session.lastUrl) {
-        	res.redirect(req.session.lastUrl + '#edit');
+
+            if(req.session.lastUrl.indexOf('/admin/') == -1){
+                res.redirect(req.session.lastUrl + '#edit');
+            }
+            else{
+                res.redirect(req.session.lastUrl);
+            }
+
         }
         else{
         	res.redirect('/');
@@ -147,5 +160,6 @@ exports.setup = function(app, config){
     app.use('/api/pages', pages);
     app.use('/api/images', images);
     app.use('/api/auth', auth);
+    app.use('/api/settings', settings);
 
 }
