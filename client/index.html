@@ -26,6 +26,8 @@
 
             <h1>Pages</h1>
 
+            <button class="hashedit-add" hashedit-add-page><svg viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet"><g><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"></path></g></svg></button>
+
         </menu>
 
         <div id="hashedit-list" class="hashedit-list"></div>
@@ -45,6 +47,77 @@
 
         </div>
         <!-- /#hashedit-form -->
+
+        <div id="hashedit-page-settings" class="hashedit-modal">
+
+            <div class="hashedit-modal-body">
+
+                <h2>Settings</h2>
+
+            	<label>Title</label>
+            	<input id="hashedit-page-title" type="text" maxlength="128">
+
+                <label>Description</label>
+                <input id="hashedit-page-desc" type="text" maxlength="128">
+
+                <div class="actions">
+                    <a hashedit-cancel-modal>Cancel</a>
+                    <a hashedit-apply-page-settings class="primary">Apply</a>
+                </div>
+
+            </div>
+            <!-- /.context-body -->
+
+        </div>
+        <!-- /#hashedit-page-settings -->
+
+        <div id="hashedit-add-page" class="hashedit-modal">
+
+            <div class="hashedit-modal-body">
+
+                <h2>Add Page</h2>
+
+                <label>Path</label>
+              	<select id="hashedit-add-page-path" type="text"></select>
+
+              	<label>URL</label>
+              	<input id="hashedit-add-page-url" type="text" maxlength="128" placeholder="new-page">
+
+              	<label>Title</label>
+            	<input id="hashedit-add-page-title" type="text" maxlength="128">
+
+                <label>Description</label>
+                <input id="hashedit-add-page-desc" type="text" maxlength="128">
+
+                <div class="actions">
+                    <a hashedit-cancel-modal>Cancel</a>
+                    <a hashedit-add-page-create class="primary">Create</a>
+                </div>
+
+            </div>
+            <!-- /.context-body -->
+
+        </div>
+        <!-- /#hashedit-add-page -->
+
+        <div id="hashedit-remove-page" class="hashedit-modal">
+
+            <div class="hashedit-modal-body">
+
+                <h2>Remove Page</h2>
+
+                <p>Are you sure you want to remove this page?</p>
+
+                <div class="actions">
+                    <a hashedit-cancel-modal>Cancel</a>
+                    <a hashedit-remove-page-confirm class="primary">Remove</a>
+                </div>
+
+            </div>
+            <!-- /.context-body -->
+
+        </div>
+        <!-- /#hashedit-add-page -->
 
         <!-- cdn (replace with build later) -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.6/moment.min.js"></script>

@@ -12,13 +12,20 @@ var admin = (function () {
         listLoaded: false,
         list: null,
 
-        listURL: '/api/pages/list/details',
-        saveURL: '/api/pages/settings',
+        // current item
+        currentIndex: null,
+
+        // api endpoints
+        listUrl: '/api/pages/list/details',
+        pageSettingsUrl: '/api/pages/settings',
+        addPageURL: '/api/pages/add',
 
         /**
          * Setup app
          */
         setup: function(){
+
+            var x, y, modals, cancels;
 
             fetch(hashedit.app.authUrl, {
                     credentials: 'include'
@@ -38,8 +45,29 @@ var admin = (function () {
                         // setup events
                         admin.setupListEvents();
 
+                        // setup modal events
+                        admin.setupModalEvents();
+
                         // setup drawer
-                        hashedit.app.setupDrawer();
+                        hashedit.app.setupDrawer({page: false, app: true});
+
+                        // setup toast
+                        hashedit.app.setupToast();
+
+                        // cancel modals
+                        cancels = document.querySelectorAll('[hashedit-cancel-modal]');
+
+                        for(x=0; x<cancels.length; x++){
+                            cancels[x].addEventListener('click', function(){
+
+                                modals = document.querySelectorAll('.hashedit-modal');
+
+                                for(y=0; y<modals.length; y++){
+                                    modals[y].removeAttribute('visible');
+                                }
+
+                            });
+                        }
 
                     }
 
@@ -48,11 +76,142 @@ var admin = (function () {
         },
 
         /**
+         * Handles modal events
+         */
+        setupModalEvents: function(){
+
+            var path, url, title, description, params, xhr, item;
+
+            // creates a page
+            document.querySelector('[hashedit-add-page-create]').addEventListener('click', function() {
+
+                if (hashedit.demo === true) {
+
+                    hashedit.app.showToast('Cannot add page in demo mode', 'failure');
+
+                } else {
+
+                    // get params
+                    path = document.getElementById('hashedit-add-page-path').value;
+                    url = document.getElementById('hashedit-add-page-url').value;
+                    title = document.getElementById('hashedit-add-page-title').value;
+                    description = document.getElementById('hashedit-add-page-desc').value;
+
+                    // cleanup url
+                    url = url.trim();
+
+                    if(url !== ''){
+                        // cleanup url
+                        url = hashedit.app.replaceAll(url, '.html', '');
+                        url = hashedit.app.replaceAll(url, '.htm', '');
+                        url = hashedit.app.replaceAll(url, '.', '-');
+                        url = hashedit.app.replaceAll(url, ' ', '-');
+                        url = hashedit.app.replaceAll(url, '/', '-');
+
+                        // append path to url
+                        url = path + '/' + url + '.html';
+
+                        // fix duplicates
+                        url = hashedit.app.replaceAll(url, '//', '/');
+
+                        // set params
+                        params = {
+                            'url': url,
+                            'title': title,
+                            'description': description
+                        };
+
+                        if (admin.addPageURL) {
+
+                            // construct an HTTP request
+                            xhr = new XMLHttpRequest();
+                            xhr.open('post', admin.addPageURL, true);
+                            xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+
+                            // send the collected data as JSON
+                            xhr.send(JSON.stringify(params));
+
+                            xhr.onloadend = function() {
+
+                                // hide modal
+                                document.getElementById('hashedit-add-page').removeAttribute('visible');
+
+                                // log success
+                                hashedit.app.showToast('Page added at ' + url, 'success');
+
+                                // reload list
+                                admin.createList();
+
+                            };
+
+                        }
+                    }
+                    else{
+                        // show success
+                        hashedit.app.showToast('URL required', 'failure');
+                    }
+                }
+
+            });
+
+            // apply page settings
+            document.querySelector('[hashedit-apply-page-settings]').addEventListener('click', function() {
+
+                if (hashedit.demo === true) {
+
+                    hashedit.app.showToast('Cannot save settings in demo mode', 'failure');
+
+                } else {
+
+                    // get params
+                    title = document.getElementById('hashedit-page-title').value;
+                    description = document.getElementById('hashedit-page-desc').value;
+
+                    // set params
+                    params = {
+                        'title': title,
+                        'description': description,
+                        'url': admin.list[admin.currentIndex].url
+                    };
+
+                    if (admin.pageSettingsUrl) {
+
+                        // construct an HTTP request
+                        xhr = new XMLHttpRequest();
+                        xhr.open('post', admin.pageSettingsUrl, true);
+                        xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+
+                        // send the collected data as JSON
+                        xhr.send(JSON.stringify(params));
+
+                        xhr.onloadend = function() {
+
+                            // hide modal
+                            document.getElementById('hashedit-page-settings').removeAttribute('visible');
+
+                            // show success
+                            hashedit.app.showToast('Settings updated successfully!', 'success');
+
+                            // reload list
+                            admin.createList();
+
+                        };
+
+                    }
+                }
+
+
+            });
+
+
+        },
+
+        /**
          * Handles list events
          */
         setupListEvents: function(){
 
-            var x, i, wrapper, drawer, html, list, item, items, card, details, params, html, xhr, cancel;
+            var x, i, wrapper, drawer, html, list, item, items, card, details, params, html, xhr, cancel, index;
 
             // handle cancel
             cancel = document.querySelector('[hashedit-cancel-modal]');
@@ -71,39 +230,37 @@ var admin = (function () {
                     item = e.target;
 
                     if (e.target.hasAttribute('data-index') === false) {
-                        item = admin.findParentBySelector(e.target, '.hashedit-list-item');
+                        item = hashedit.app.findParentBySelector(e.target, '.hashedit-list-item');
                     }
 
-                    // clear other active items
-                    items = document.querySelectorAll('.hashedit-list-item[active]');
+                    // retrieve current index
+                    index = item.getAttribute('data-index');
 
-                    for(x=0; x<items.length; x++){
-                        items[x].removeAttribute('active');
+                    // set current index
+                    admin.currentIndex = index;
+
+                    if (e.target.hasAttribute('hashedit-remove-page') === true) {
+                        document.getElementById('hashedit-remove-page').setAttribute('visible', '');
                     }
+                    else if (e.target.hasAttribute('hashedit-page-settings') === true) {
 
-                    // set active
-                    item.setAttribute('active', '');
+                        document.getElementById('hashedit-page-title').value = admin.list[index].title;
+                        document.getElementById('hashedit-page-desc').value = admin.list[index].description;
 
-                    if (item.hasAttribute('data-index') === true) {
-                        i = item.getAttribute('data-index');
+                        document.getElementById('hashedit-page-settings').setAttribute('visible', '');
+                    }
+                    else{
 
-                        details = document.getElementById('hashedit-details-list');
-                        params = admin.list[i].params;
+                        // clear other active items
+                        items = document.querySelectorAll('.hashedit-list-item[active]');
 
-
-                        html = '';
-                        details.innerHTML = '';
-
-                        for(x = 0; x < params.length; x++){
-                            html += '<div class="hashedit-list-item"><label>' + params[x].label + '</label>';
-                            html += '<span>' + params[x].value + '</span>';
-                            html += '</div>';
+                        for(x=0; x<items.length; x++){
+                            items[x].removeAttribute('active');
                         }
 
-                        details.innerHTML = html;
+                        // set active
+                        item.setAttribute('active', '');
 
-                        // show modal
-                        document.getElementById('hashedit-form').setAttribute('visible', '');
                     }
 
                 });
@@ -122,7 +279,7 @@ var admin = (function () {
             console.log('[form-kit] create list');
 
             // fetch list from server
-            fetch(admin.listURL, {
+            fetch(admin.listUrl, {
                 credentials: 'include'
             })
             .then(function(response) {
@@ -130,6 +287,13 @@ var admin = (function () {
                 return response.json();
 
             }).then(function(json) {
+
+                // sort by last modified
+                json.sort(function(a, b) {
+                    a = new Date(a.lastModified);
+                    b = new Date(b.lastModified);
+                    return a>b ? -1 : a<b ? 1 : 0;
+                });
 
                 // set list to value
                 admin.list = json;
@@ -147,10 +311,8 @@ var admin = (function () {
                         item.setAttribute('class', 'hashedit-list-item');
                     }
 
-                    item.setAttribute('read', json[x].read);
-
                     // create html
-                    html = '<h2>' + json[x].title + '</h2>';
+                    html = '<h2><span class="primary">' + json[x].title + '</span><span class="secondary">' + moment(json[x].lastModified).fromNow() + '</span></h2>';
                     html += '<small>' + json[x].url + '</small>';
                     html += '<p>' + json[x].description + '</p>';
 
@@ -161,7 +323,6 @@ var admin = (function () {
                     html += '<div class="hashedit-list-actions"><a hashedit-remove-page>Remove</a> <a hashedit-page-settings>Settings</a> <a href="' + json[x].editUrl + '" class="primary">Edit</a></div>';
 
                     item.innerHTML = html;
-                    item.setAttribute('data-id', json[x].id);
                     item.setAttribute('data-index', x);
 
                     list.appendChild(item);
@@ -173,40 +334,6 @@ var admin = (function () {
                 console.log('parsing failed', ex);
             });
 
-
-        },
-
-        /**
-         * Find the parent by a selector ref: http://stackoverflow.com/questions/14234560/javascript-how-to-get-parent-element-by-selector
-         * @param {Array} config.sortable
-         */
-        findParentBySelector: function(elm, selector) {
-            var all, cur;
-
-            all = document.querySelectorAll(selector);
-            cur = elm.parentNode;
-
-            while (cur && !admin.collectionHas(all, cur)) { //keep going up until you find a match
-                cur = cur.parentNode; //go up
-            }
-            return cur; //will return null if not found
-        },
-
-        /**
-         * Helper for findParentBySelecotr
-         * @param {Array} config.sortable
-         */
-        collectionHas: function(a, b) { //helper function (see below)
-            var i, len;
-
-            len = a.length;
-
-            for (i = 0; i < len; i += 1) {
-                if (a[i] == b) {
-                    return true;
-                }
-            }
-            return false;
         }
 
     }

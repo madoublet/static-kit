@@ -106,14 +106,19 @@ router.get('/list/details', function(req, res, next) {
 
                     }
 
+                    // get modified and created date
+                    stat = fs.statSync(pathToFile);
+
                     // page
                     var page = {
                         title: title,
                         description: desc,
                         image: image,
-                        url: result.files[x].path,
+                        url: '/' + result.files[x].path,
                         fullUrl: domain + '/' + result.files[x].path,
-                        editUrl: domain + '/' + result.files[x].path + '#edit'
+                        editUrl: domain + '/' + result.files[x].path + '#edit',
+                        lastModified: stat.mtime,
+                        created: stat.ctime,
                     }
 
                     list.push(page);
@@ -236,6 +241,10 @@ router.post('/add', function(req, res, next) {
                     }
 
                     console.log('[Hashedit] File created at: ' + file);
+
+                    // clear cache
+                    cache.del('list-details');
+
                   });
 
                 }
@@ -360,6 +369,16 @@ router.post('/settings', function(req, res, next) {
   // get pathname
   var pathToFile = parts.pathname;
 
+  if(params.url){
+
+      pathToFile = params.url;
+
+      if(pathToFile.charAt(0) != '/'){
+          pathToFile = '/' + pathToFile;
+      }
+
+  }
+
   if(req.user && pathToFile){
 
     pathToFile = 'public' + pathToFile;
@@ -386,6 +405,10 @@ router.post('/settings', function(req, res, next) {
               throw err;
             }
 
+            // clear cache
+            cache.del('list-details');
+
+            // log
             console.log('[Hashedit] Settings Saved!');
           });
 
