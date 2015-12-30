@@ -18,7 +18,8 @@ var admin = (function () {
         // api endpoints
         listUrl: '/api/pages/list/details',
         pageSettingsUrl: '/api/pages/settings',
-        addPageURL: '/api/pages/add',
+        addPageUrl: '/api/pages/add',
+        removeUrl: '/api/pages/remove',
 
         /**
          * Setup app
@@ -121,11 +122,11 @@ var admin = (function () {
                             'description': description
                         };
 
-                        if (admin.addPageURL) {
+                        if (admin.addPageUrl) {
 
                             // construct an HTTP request
                             xhr = new XMLHttpRequest();
-                            xhr.open('post', admin.addPageURL, true);
+                            xhr.open('post', admin.addPageUrl, true);
                             xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
 
                             // send the collected data as JSON
@@ -191,6 +192,49 @@ var admin = (function () {
 
                             // show success
                             hashedit.app.showToast('Settings updated successfully!', 'success');
+
+                            // reload list
+                            admin.createList();
+
+                        };
+
+                    }
+                }
+
+
+            });
+
+            // apply page settings
+            document.querySelector('[hashedit-remove-page-confirm]').addEventListener('click', function() {
+
+                if (hashedit.demo === true) {
+
+                    hashedit.app.showToast('Cannot remove page in demo mode', 'failure');
+
+                } else {
+
+                    // set params
+                    params = {
+                        'url': admin.list[admin.currentIndex].url
+                    };
+
+                    if (admin.removeUrl) {
+
+                        // construct an HTTP request
+                        xhr = new XMLHttpRequest();
+                        xhr.open('post', admin.removeUrl, true);
+                        xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+
+                        // send the collected data as JSON
+                        xhr.send(JSON.stringify(params));
+
+                        xhr.onloadend = function() {
+
+                            // hide modal
+                            document.getElementById('hashedit-remove-page').removeAttribute('visible');
+
+                            // show success
+                            hashedit.app.showToast('Page removed successfully!', 'success');
 
                             // reload list
                             admin.createList();

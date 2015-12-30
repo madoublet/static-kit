@@ -180,89 +180,88 @@ router.get('/path/list', function(req, res, next) {
   */
 router.post('/add', function(req, res, next) {
 
-  if(req.user){
+    if(req.user){
 
-    var params = req.body;
-    var url = params.url;
-    var title = params.title;
-    var description = params.description;
+        var params = req.body;
+        var url = params.url;
+        var title = params.title;
+        var description = params.description;
 
 
-    if (url && url.charAt(0)==='/') {
-        url = url.slice(1);
-    }
-
-    var file = 'public/' + url;
-    var defaultFile = 'public/.default.html';
-
-    // get directory from path
-    var dir = path.dirname(file);
-
-    // check if a default file exists in that directory, #ref: http://bit.ly/1IFovfs
-    try {
-        // query the entry
-        stats = fs.lstatSync(dir + '/.default.html');
-
-        // is it a file?
-        if (stats.isFile()) {
-            defaultFile = dir + '/.default.html';
+        if (url && url.charAt(0)==='/') {
+            url = url.slice(1);
         }
-    }
-    catch (e) {
 
-        // log exception
-        console.error(e);
-    }
+        var file = 'public/' + url;
+        var defaultFile = 'public/.default.html';
 
-    // make directory if it does not exist
-    mkdirp(dir, function (err) {
-        if (err) {
-          console.error(err)
+        // get directory from path
+        var dir = path.dirname(file);
+
+        // check if a default file exists in that directory, #ref: http://bit.ly/1IFovfs
+        try {
+            // query the entry
+            stats = fs.lstatSync(dir + '/.default.html');
+
+            // is it a file?
+            if (stats.isFile()) {
+                defaultFile = dir + '/.default.html';
+            }
         }
-        else{
+        catch (e) {
 
-            // read file
-            fs.readFile(defaultFile, function (err, html) {
+            // log exception
+            console.error(e);
+        }
 
-                if (err) {
-                  throw err;
-                }
-                else{
+        // make directory if it does not exist
+        mkdirp(dir, function (err) {
+            if (err) {
+              console.error(err)
+            }
+            else{
 
-                  $ = cheerio.load(html);
+                // read file
+                fs.readFile(defaultFile, function (err, html) {
 
-                  $('title').html(title);
-                  $('meta[name=description]').attr('content', description);
-
-                  // write file
-                  fs.writeFile(file, $.html(), function (err) {
                     if (err) {
                       throw err;
                     }
+                    else{
 
-                    console.log('[Hashedit] File created at: ' + file);
+                      $ = cheerio.load(html);
 
-                    // clear cache
-                    cache.del('list-details');
+                      $('title').html(title);
+                      $('meta[name=description]').attr('content', description);
 
-                  });
+                      // write file
+                      fs.writeFile(file, $.html(), function (err) {
+                        if (err) {
+                          throw err;
+                        }
 
-                }
-            });
+                        console.log('[Hashedit] File created at: ' + file);
 
-        }
+                        // clear cache
+                        cache.del('list-details');
 
-    });
+                      });
 
-    // send success
-    res.sendStatus(200);
-  }
-  else{
-    res.sendStatus(401);
-  }
+                    }
+                });
+
+            }
+
+        });
+
+        // send success
+        res.sendStatus(200);
+    }
+    else{
+        res.sendStatus(401);
+    }
 
 });
-
 
 /**
   * Edits a page
@@ -272,82 +271,126 @@ router.post('/add', function(req, res, next) {
   */
 router.post('/save', function(req, res, next) {
 
-  // get parts
-  var parts = url.parse(req.headers.referer);
+    // get parts
+    var parts = url.parse(req.headers.referer);
 
-  // get pathname
-  var pathToFile = parts.pathname;
+    // get pathname
+    var pathToFile = parts.pathname;
 
-  // handle index files (e.g. http://hashedit.io/contact)
-  if(pathToFile.indexOf('.html') == -1){
+    // handle index files (e.g. http://hashedit.io/contact)
+    if(pathToFile.indexOf('.html') == -1){
 
-    // get the last character of the string
-    if(pathToFile.slice(-1) == '/'){
-      pathToFile += 'index.html';
-    }
-    else{
-      pathToFile += '/index.html';
-    }
-
-  }
-
-  if(req.user && pathToFile){
-
-    pathToFile = 'public' + pathToFile;
-
-    if(req.body){
-
-      // read file
-      fs.readFile(pathToFile, function (err, html) {
-
-        if (err) {
-          throw err;
+        // get the last character of the string
+        if(pathToFile.slice(-1) == '/'){
+            pathToFile += 'index.html';
         }
         else{
-
-          // load html
-          $ = cheerio.load(html);
-
-          // walk through changes
-          var changes = req.body;
-
-          for(var x=0; x<changes.length; x++){
-
-            var selector = changes[x].selector;
-            var html = changes[x].html;
-
-            // set html to new html
-            $(selector).html(html);
-
-          }
-
-          // write changes
-          fs.writeFile(pathToFile, $.html(), function (err) {
-            if (err) {
-              throw err;
-            }
-
-            console.log('[Hashedit] Content Saved!');
-          });
-
-
-
+            pathToFile += '/index.html';
         }
 
-      });
+    }
 
+    if(req.user && pathToFile){
+
+        pathToFile = 'public' + pathToFile;
+
+        if(req.body){
+
+            // read file
+            fs.readFile(pathToFile, function (err, html) {
+
+                if (err) {
+                    throw err;
+                }
+                else{
+
+                    // load html
+                    $ = cheerio.load(html);
+
+                    // walk through changes
+                    var changes = req.body;
+
+                    for(var x=0; x<changes.length; x++){
+
+                        var selector = changes[x].selector;
+                        var html = changes[x].html;
+
+                        // set html to new html
+                        $(selector).html(html);
+
+                    }
+
+                    // write changes
+                    fs.writeFile(pathToFile, $.html(), function (err) {
+                        if (err) {
+                          throw err;
+                        }
+
+                        console.log('[Hashedit] Content Saved!');
+                    });
+
+                }
+
+            });
+
+        }
+        else{
+            res.sendStatus(400);
+        }
+
+        // send success
+        res.sendStatus(200);
+    }
+    else{
+        res.sendStatus(401);
+    }
+
+});
+
+/**
+  * Removes a page
+  * @param {Object} req - http://expressjs.com/api.html#req
+  * @param {Object} res - http://expressjs.com/api.html#res
+  * @param {Object} next - required for middleware
+  */
+router.post('/remove', function(req, res, next) {
+
+    // get parts
+    var parts = url.parse(req.headers.referer);
+
+    var params = req.body;
+
+    // set pathToFile
+    var pathToFile = params.url;
+
+    if(req.user && pathToFile){
+
+        pathToFile = 'public' + pathToFile;
+
+        // read file
+        fs.unlink(pathToFile, function (err) {
+
+            if (err) {
+                throw err;
+            }
+            else{
+
+                // clear cache
+                cache.del('list-details');
+
+                // log
+                console.log('[Hashedit] Page removed at: ' + pathToFile);
+
+                // send success
+                res.sendStatus(200);
+            }
+
+        });
 
     }
     else{
-      res.sendStatus(400);
+        res.sendStatus(401);
     }
-
-    // send success
-    res.sendStatus(200);
-  }
-  else{
-    res.sendStatus(401);
-  }
 
 });
 
@@ -359,77 +402,68 @@ router.post('/save', function(req, res, next) {
   */
 router.post('/settings', function(req, res, next) {
 
-  // get parts
-  var parts = url.parse(req.headers.referer);
+    // get parts
+    var parts = url.parse(req.headers.referer);
 
-  var params = req.body;
-  var title = params.title;
-  var description = params.description;
+    var params = req.body;
+    var title = params.title;
+    var description = params.description;
 
-  // get pathname
-  var pathToFile = parts.pathname;
+    // get pathname
+    var pathToFile = parts.pathname;
 
-  if(params.url){
+    if(params.url){
+        pathToFile = params.url;
+    }
 
-      pathToFile = params.url;
+    if(req.user && pathToFile){
 
-      if(pathToFile.charAt(0) != '/'){
-          pathToFile = '/' + pathToFile;
-      }
+        pathToFile = 'public' + pathToFile;
 
-  }
+        if(req.body){
 
-  if(req.user && pathToFile){
+            // read file
+            fs.readFile(pathToFile, function (err, html) {
 
-    pathToFile = 'public' + pathToFile;
+                if (err) {
+                  throw err;
+                }
+                else{
 
-    if(req.body){
+                  // load html
+                  $ = cheerio.load(html);
 
-      // read file
-      fs.readFile(pathToFile, function (err, html) {
+                  $('title').html(title);
+                  $('meta[name=description]').attr('content', description);
 
-        if (err) {
-          throw err;
+                  // write changes
+                  fs.writeFile(pathToFile, $.html(), function (err) {
+                    if (err) {
+                      throw err;
+                    }
+
+                    // clear cache
+                    cache.del('list-details');
+
+                    // log
+                    console.log('[Hashedit] Settings Saved!');
+                  });
+
+                }
+
+            });
+
         }
         else{
-
-          // load html
-          $ = cheerio.load(html);
-
-          $('title').html(title);
-          $('meta[name=description]').attr('content', description);
-
-          // write changes
-          fs.writeFile(pathToFile, $.html(), function (err) {
-            if (err) {
-              throw err;
-            }
-
-            // clear cache
-            cache.del('list-details');
-
-            // log
-            console.log('[Hashedit] Settings Saved!');
-          });
-
-
-
+            res.sendStatus(400);
         }
 
-      });
-
-
+        // send success
+        res.sendStatus(200);
     }
     else{
-      res.sendStatus(400);
+        res.sendStatus(401);
     }
-
-    // send success
-    res.sendStatus(200);
-  }
-  else{
-    res.sendStatus(401);
-  }
 
 });
 
@@ -441,49 +475,46 @@ router.post('/settings', function(req, res, next) {
   */
 router.get('/retrieve', function(req, res, next) {
 
-  // get parts
-  var parts = url.parse(req.headers.referer);
+    // get parts
+    var parts = url.parse(req.headers.referer);
 
-  // get pathname
-  var pathToFile = parts.pathname;
+    // get pathname
+    var pathToFile = parts.pathname;
 
-  // handle index files (e.g. http://hashedit.io/contact)
-  if(pathToFile.indexOf('.html') == -1){
+    // handle index files (e.g. http://hashedit.io/contact)
+    if(pathToFile.indexOf('.html') == -1){
 
-    // get the last character of the string
-    if(pathToFile.slice(-1) == '/'){
-      pathToFile += 'index.html';
+        // get the last character of the string
+        if(pathToFile.slice(-1) == '/'){
+            pathToFile += 'index.html';
+        }
+        else{
+            pathToFile += '/index.html';
+        }
+
+    }
+
+    if(pathToFile){
+
+        pathToFile = 'public' + pathToFile;
+
+        // read file
+        fs.readFile(pathToFile, function (err, html) {
+
+            if (err) {
+                throw err;
+            }
+            else{
+                res.send(html);
+            }
+
+        });
+
     }
     else{
-      pathToFile += '/index.html';
+        res.sendStatus(401);
     }
 
-  }
-
-  console.log('pathToFile=' + pathToFile);
-
-  if(pathToFile){
-
-    pathToFile = 'public' + pathToFile;
-
-    // read file
-    fs.readFile(pathToFile, function (err, html) {
-
-      if (err) {
-        throw err;
-      }
-      else{
-        res.send(html);
-      }
-
-    });
-
-  }
-  else{
-    res.sendStatus(401);
-  }
-
 });
-
 
 module.exports = router;
