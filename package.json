@@ -24,11 +24,13 @@
     "express": "~4.13.1",
     "express-session": "*",
     "passport": "~0.3.0",
-    "passport-google-oauth": "*",
+    "passport-local": "~1.0.0",
+    "passport-google-oauth": "~0.2.0",
     "cheerio": "*",
     "mkdirp": "*",
     "readdirp": "*",
     "multiparty": "*",
-    "node-cache": "~3.0.0"
+    "node-cache": "~3.0.0",
+    "bcrypt-nodejs": "~0.0.3"
   }
 }

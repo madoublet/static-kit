@@ -1,9 +1,12 @@
 var express = require('express'),
 	session = require('express-session'),
+    fs = require('fs'),
 	path = require('path'),
 	url  = require('url'),
 	passport = require('passport'),
-	GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
+	GoogleStrategy = require('passport-google-oauth').OAuth2Strategy,
+	LocalStrategy = require('passport-local').Strategy,
+	bcrypt = require('bcrypt-nodejs');
 
 // routes
 var pages = require('./server/pages'),
@@ -61,14 +64,30 @@ exports.setup = function(app, config){
         var provider = profile.provider;
         var isAuthorized = false;
 
+        // get authorized users
+        var users = [];
+        var file = 'data/users.json';
+
+        // read file
+        var json = fs.readFileSync(file, 'utf8');
+
+        // parse json
+        if(json != null){
+
+            if(json != ''){
+                users = JSON.parse(json);
+            }
+
+        }
+
         // check email/provider against authorized list
         for(x=0; x<emails.length; x++){
         	var email = emails[x].value;
 
-        	for(y=0; y<config.authorized.length; y++){
+        	for(y=0; y<users.length; y++){
 
           	    // check authorization
-          	    if(config.authorized[y].email == email && config.authorized[y].provider == provider){
+          	    if(users[y].email == email && users[y].provider == provider){
               	    isAuthorized = true;
           	    }
 
@@ -87,6 +106,98 @@ exports.setup = function(app, config){
 
       }
     ));
+
+    // setup local strategy
+    passport.use(new LocalStrategy(
+        function(username, password, done) {
+
+            var isAuthorized = false;
+            var profile = null;
+            var email = username;
+
+            console.log('[Hashedit] local strategy login');
+
+            // get authorized users
+            var users = [];
+            var file = 'data/users.json';
+
+            // read file
+            var json = fs.readFileSync(file, 'utf8');
+
+            // parse json
+            if(json != null){
+
+                if(json != ''){
+                    users = JSON.parse(json);
+                }
+
+            }
+
+        	for(y=0; y<users.length; y++){
+
+          	    // check authorization
+          	    if(users[y].email == email && users[y].provider == 'local'){
+
+              	    if(bcrypt.compareSync(password, users[y].password) == true){
+                  	    isAuthorized = true;
+                  	    console.log('[Hashedit] local strategy - success');
+              	    }
+              	    else{
+                  	    console.log('[Hashedit] local strategy - failure');
+              	    }
+
+          	    }
+
+        	}
+
+            if(isAuthorized){
+
+                profile = {username: username};
+
+              	console.log('[Hashedit] Authorized!');
+              	return done(null, profile);
+            }
+            else{
+              	console.log('[Hashedit] Not Authorized!');
+              	return done(null, false, {message: 'Not authorized'});
+            }
+        }
+    ));
+
+    /**
+      * Route for Local Auth
+      * @param {Object} req - http://expressjs.com/api.html#req
+      * @param {Object} res - http://expressjs.com/api.html#res
+      */
+    app.post('/auth/local',
+      passport.authenticate('local', { failureRedirect: '/login' }),
+      function(req, res) {
+
+        // get parts
+        var parts = url.parse(req.headers.referer);
+
+        // get pathname
+        req.session.pathToFile = parts.pathname;
+
+        // set lastUrl to request url, then authenticate
+        req.session.lastUrl = req.headers.referer;
+
+        if(req.session.lastUrl) {
+
+            if(req.session.lastUrl.indexOf('/admin/') == -1){
+                res.redirect(req.session.lastUrl + '#edit');
+            }
+            else{
+                res.redirect(req.session.lastUrl);
+            }
+
+        }
+        else{
+        	res.redirect('/');
+        }
+
+      });
+
 
     /**
       * Route for Google Auth
