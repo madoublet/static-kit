@@ -170,7 +170,7 @@ exports.setup = function(app, config){
       * @param {Object} res - http://expressjs.com/api.html#res
       */
     app.post('/auth/local',
-      passport.authenticate('local', { failureRedirect: '/login' }),
+      passport.authenticate('local', { failureRedirect: '/login-failure' }),
       function(req, res) {
 
         // get parts
@@ -197,7 +197,6 @@ exports.setup = function(app, config){
         }
 
       });
-
 
     /**
       * Route for Google Auth
@@ -230,7 +229,7 @@ exports.setup = function(app, config){
       * @param {Object} res - http://expressjs.com/api.html#res
       */
     app.get('/auth/google/callback',
-      passport.authenticate('google', { failureRedirect: '/login' }),
+      passport.authenticate('google', { failureRedirect: '/login-failure' }),
       function(req, res) {
 
         if(req.session.lastUrl) {
@@ -258,11 +257,36 @@ exports.setup = function(app, config){
 
       req.logout();
 
-      if(req.session.lastUrl) {
-      	res.redirect(req.session.lastUrl);
+      if(req.headers.referer) {
+      	res.redirect(req.headers.referer);
       }
       else{
       	res.redirect('/');
+      }
+
+    });
+
+    /**
+      * Logs the user out
+      * @param {Object} req - http://expressjs.com/api.html#req
+      * @param {Object} res - http://expressjs.com/api.html#res
+      */
+    app.get('/login-failure', function(req, res){
+
+      req.logout();
+
+      if(req.headers.referer) {
+
+          if(req.headers.referer.indexOf('login-failure') == -1){
+              res.redirect(req.headers.referer + '?login-failure');
+          }
+          else{
+              res.redirect(req.headers.referer);
+          }
+
+      }
+      else{
+        res.redirect('/?login-failure');
       }
 
     });
