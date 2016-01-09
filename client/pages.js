@@ -2,7 +2,7 @@
  * Displays a list of pages
  * @author: Matthew Smith
  */
-var admin = (function () {
+var pages = (function () {
 
     'use strict';
 
@@ -41,13 +41,13 @@ var admin = (function () {
                     } else {
 
                         // create list
-                        admin.createList();
+                        pages.createList();
 
                         // setup events
-                        admin.setupListEvents();
+                        pages.setupListEvents();
 
                         // setup modal events
-                        admin.setupModalEvents();
+                        pages.setupModalEvents();
 
                         // setup drawer
                         hashedit.app.setupDrawer({page: false, app: true});
@@ -122,11 +122,11 @@ var admin = (function () {
                             'description': description
                         };
 
-                        if (admin.addPageUrl) {
+                        if (pages.addPageUrl) {
 
                             // construct an HTTP request
                             xhr = new XMLHttpRequest();
-                            xhr.open('post', admin.addPageUrl, true);
+                            xhr.open('post', pages.addPageUrl, true);
                             xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
 
                             // send the collected data as JSON
@@ -141,7 +141,7 @@ var admin = (function () {
                                 hashedit.app.showToast('Page added at ' + url, 'success');
 
                                 // reload list
-                                admin.createList();
+                                pages.createList();
 
                             };
 
@@ -172,14 +172,14 @@ var admin = (function () {
                     params = {
                         'title': title,
                         'description': description,
-                        'url': admin.list[admin.currentIndex].url
+                        'url': pages.list[pages.currentIndex].url
                     };
 
-                    if (admin.pageSettingsUrl) {
+                    if (pages.pageSettingsUrl) {
 
                         // construct an HTTP request
                         xhr = new XMLHttpRequest();
-                        xhr.open('post', admin.pageSettingsUrl, true);
+                        xhr.open('post', pages.pageSettingsUrl, true);
                         xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
 
                         // send the collected data as JSON
@@ -194,7 +194,7 @@ var admin = (function () {
                             hashedit.app.showToast('Settings updated successfully!', 'success');
 
                             // reload list
-                            admin.createList();
+                            pages.createList();
 
                         };
 
@@ -215,14 +215,14 @@ var admin = (function () {
 
                     // set params
                     params = {
-                        'url': admin.list[admin.currentIndex].url
+                        'url': pages.list[pages.currentIndex].url
                     };
 
-                    if (admin.removeUrl) {
+                    if (pages.removeUrl) {
 
                         // construct an HTTP request
                         xhr = new XMLHttpRequest();
-                        xhr.open('post', admin.removeUrl, true);
+                        xhr.open('post', pages.removeUrl, true);
                         xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
 
                         // send the collected data as JSON
@@ -237,7 +237,7 @@ var admin = (function () {
                             hashedit.app.showToast('Page removed successfully!', 'success');
 
                             // reload list
-                            admin.createList();
+                            pages.createList();
 
                         };
 
@@ -281,15 +281,15 @@ var admin = (function () {
                     index = item.getAttribute('data-index');
 
                     // set current index
-                    admin.currentIndex = index;
+                    pages.currentIndex = index;
 
                     if (e.target.hasAttribute('hashedit-remove-page') === true) {
                         document.getElementById('hashedit-remove-page').setAttribute('visible', '');
                     }
                     else if (e.target.hasAttribute('hashedit-page-settings') === true) {
 
-                        document.getElementById('hashedit-page-title').value = admin.list[index].title;
-                        document.getElementById('hashedit-page-desc').value = admin.list[index].description;
+                        document.getElementById('hashedit-page-title').value = pages.list[index].title;
+                        document.getElementById('hashedit-page-desc').value = pages.list[index].description;
 
                         document.getElementById('hashedit-page-settings').setAttribute('visible', '');
                     }
@@ -323,7 +323,7 @@ var admin = (function () {
             console.log('[form-kit] create list');
 
             // fetch list from server
-            fetch(admin.listUrl, {
+            fetch(pages.listUrl, {
                 credentials: 'include'
             })
             .then(function(response) {
@@ -340,7 +340,7 @@ var admin = (function () {
                 });
 
                 // set list to value
-                admin.list = json;
+                pages.list = json;
 
                 list = document.getElementById('hashedit-list');
                 list.innerHTML = '';
@@ -372,7 +372,7 @@ var admin = (function () {
                     list.appendChild(item);
                 }
 
-                admin.listLoaded = true;
+                pages.listLoaded = true;
 
             }).catch(function(ex) {
                 console.log('parsing failed', ex);

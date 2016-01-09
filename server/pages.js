@@ -116,7 +116,7 @@ router.get('/list/details', function(req, res, next) {
                         image: image,
                         url: '/' + result.files[x].path,
                         fullUrl: domain + '/' + result.files[x].path,
-                        editUrl: domain + '/' + result.files[x].path + '#edit',
+                        editUrl: domain + '/edit?url=' + '/' + result.files[x].path,
                         lastModified: stat.mtime,
                         created: stat.ctime,
                     }
@@ -275,20 +275,7 @@ router.post('/save', function(req, res, next) {
     var parts = url.parse(req.headers.referer);
 
     // get pathname
-    var pathToFile = parts.pathname;
-
-    // handle index files (e.g. http://hashedit.io/contact)
-    if(pathToFile.indexOf('.html') == -1){
-
-        // get the last character of the string
-        if(pathToFile.slice(-1) == '/'){
-            pathToFile += 'index.html';
-        }
-        else{
-            pathToFile += '/index.html';
-        }
-
-    }
+    var pathToFile = req.body.url;
 
     if(req.user && pathToFile){
 
@@ -308,7 +295,7 @@ router.post('/save', function(req, res, next) {
                     $ = cheerio.load(html);
 
                     // walk through changes
-                    var changes = req.body;
+                    var changes = req.body.changes;
 
                     for(var x=0; x<changes.length; x++){
 

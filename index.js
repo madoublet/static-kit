@@ -184,12 +184,7 @@ exports.setup = function(app, config){
 
         if(req.session.lastUrl) {
 
-            if(req.session.lastUrl.indexOf('/admin/') == -1){
-                res.redirect(req.session.lastUrl + '#edit');
-            }
-            else{
-                res.redirect(req.session.lastUrl);
-            }
+            res.redirect(req.session.lastUrl);
 
         }
         else{
@@ -234,12 +229,7 @@ exports.setup = function(app, config){
 
         if(req.session.lastUrl) {
 
-            if(req.session.lastUrl.indexOf('/admin/') == -1){
-                res.redirect(req.session.lastUrl + '#edit');
-            }
-            else{
-                res.redirect(req.session.lastUrl);
-            }
+            res.redirect(req.session.lastUrl);
 
         }
         else{
